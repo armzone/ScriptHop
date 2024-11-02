@@ -68,21 +68,40 @@ local function selectRandomNode(nodes)
     end
 end
 
--- ฟังก์ชันสำหรับเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก
-local function attemptTeleport(jobId, player)
-    local success = false
-    while not success do
-        local teleportSuccess, errorMsg = pcall(function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, player)
-        end)
-        if teleportSuccess then
-            print("เทเลพอร์ตสำเร็จไปยังเซิร์ฟเวอร์ที่มี job_id: " .. jobId)
-            success = true
+-- ฟังก์ชันสำหรับเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก และลองใหม่หากเซิร์ฟเวอร์เต็ม
+local function attemptTeleport(player)
+    repeat
+        local ghoulData = getGhoulDataFromFirebase(serverUrl)
+        if not ghoulData then
+            print("ไม่สามารถดึงข้อมูลเซิร์ฟเวอร์ได้ รอ 10 วินาทีก่อนลองใหม่...")
+            wait(10)
         else
-            print("การเทเลพอร์ตล้มเหลว, กำลังลองใหม่...")
-            wait(5) -- รอ 5 วินาทีแล้วลองใหม่
+            local selectedNode = selectRandomNode(ghoulData)
+            if selectedNode and selectedNode.job_id then
+                print("กำลังพยายามเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
+                
+                local teleportSuccess, errorMsg = pcall(function()
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, selectedNode.job_id, player)
+                end)
+                
+                if teleportSuccess then
+                    print("เทเลพอร์ตสำเร็จไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
+                    return true -- ออกจากฟังก์ชันหากเทเลพอร์ตสำเร็จ
+                else
+                    print("การเทเลพอร์ตล้มเหลว: " .. errorMsg)
+                    if errorMsg:find("GameFull") then
+                        print("เซิร์ฟเวอร์เต็ม, กำลังลองเซิร์ฟเวอร์ใหม่...")
+                    else
+                        warn("เกิดข้อผิดพลาดขณะเทเลพอร์ต: " .. errorMsg)
+                    end
+                end
+            else
+                print("ไม่พบเซิร์ฟเวอร์ที่ตรงตามเงื่อนไข รอ 10 วินาทีก่อนลองใหม่...")
+                wait(10)
+            end
         end
-    end
+        wait(5) -- รอ 5 วินาทีก่อนลองใหม่ในกรณีที่เซิร์ฟเวอร์เต็ม
+    until false -- วนลูปตลอดจนกว่าจะเทเลพอร์ตสำเร็จ
 end
 
 -- ฟังก์ชันหลักสำหรับตรวจสอบและเทเลพอร์ต
@@ -104,25 +123,17 @@ local function checkForCursedCaptainAndTeleport()
         local cursedCaptain = Workspace:FindFirstChild("Enemies") and Workspace.Enemies:FindFirstChild("Cursed Captain")
         if not cursedCaptain then
             print("ไม่พบ 'Cursed Captain' ใน Workspace, กำลังเตรียมเทเลพอร์ต...")
-            
-            local ghoulData = getGhoulDataFromFirebase(serverUrl)
-            if ghoulData then
-                local selectedNode = selectRandomNode(ghoulData)
-                if selectedNode and selectedNode.job_id then
-                    attemptTeleport(selectedNode.job_id, player)
-                    return -- ออกจากลูปหลังจากเทเลพอร์ตสำเร็จ
-                else
-                    print("ไม่พบเซิร์ฟเวอร์ที่ตรงตามเงื่อนไข, รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง...")
-                end
-            else
-                warn("ไม่สามารถดึงข้อมูลจาก Firebase หรือข้อมูลไม่ถูกต้อง")
-            end
+            attemptTeleport(player)
+            return -- ออกจากลูปหลังจากเทเลพอร์ตสำเร็จ
         else
             print("พบ 'Cursed Captain' ใน Workspace, รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง...")
         end
         wait(10)
     end
 end
+
+-- รอ 15 วินาทีก่อนเริ่มสคริปต์
+wait(15)
 
 -- เรียกฟังก์ชันหลัก
 checkForCursedCaptainAndTeleport()
