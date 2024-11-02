@@ -70,7 +70,7 @@ end
 
 -- ฟังก์ชันสำหรับเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก และลองใหม่หากเซิร์ฟเวอร์เต็ม
 local function attemptTeleport(player)
-    repeat
+    while true do
         local ghoulData = getGhoulDataFromFirebase(serverUrl)
         if not ghoulData then
             print("ไม่สามารถดึงข้อมูลเซิร์ฟเวอร์ได้ รอ 10 วินาทีก่อนลองใหม่...")
@@ -86,11 +86,11 @@ local function attemptTeleport(player)
                 
                 if teleportSuccess then
                     print("เทเลพอร์ตสำเร็จไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
-                    return true -- ออกจากฟังก์ชันหากเทเลพอร์ตสำเร็จ
+                    return -- ออกจากฟังก์ชันหากเทเลพอร์ตสำเร็จ
                 else
                     print("การเทเลพอร์ตล้มเหลว: " .. errorMsg)
                     if errorMsg:find("GameFull") then
-                        print("เซิร์ฟเวอร์เต็ม, กำลังลองเซิร์ฟเวอร์ใหม่...")
+                        print("เซิร์ฟเวอร์เต็ม, กำลังลองเซิร์ฟเวอร์ใหม่ใน 5 วินาที...")
                     else
                         warn("เกิดข้อผิดพลาดขณะเทเลพอร์ต: " .. errorMsg)
                     end
@@ -101,7 +101,7 @@ local function attemptTeleport(player)
             end
         end
         wait(5) -- รอ 5 วินาทีก่อนลองใหม่ในกรณีที่เซิร์ฟเวอร์เต็ม
-    until false -- วนลูปตลอดจนกว่าจะเทเลพอร์ตสำเร็จ
+    end
 end
 
 -- ฟังก์ชันหลักสำหรับตรวจสอบและเทเลพอร์ต
