@@ -167,5 +167,8 @@ playerGui.DescendantAdded:Connect(function(descendant)
     end
 end)
 
--- เริ่มต้นตรวจสอบและเทเลพอร์ตหากพบเงื่อนไขที่กำหนด
-checkForBestNodeAndTeleport(false)
+-- วนลูปเพื่อตรวจสอบสถานะพระจันทร์และเซิร์ฟเวอร์ทุก 10 วินาที
+while true do
+    checkForBestNodeAndTeleport(false)  -- ตรวจสอบสถานะโดยไม่บังคับให้ย้ายเซิร์ฟเวอร์
+    wait(10)  -- รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง
+end
