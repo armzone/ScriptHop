@@ -40,13 +40,11 @@ local function selectRandomNode(nodes)
         print("ตรวจสอบ players (ก่อนการจัดการ):", playersData)
         
         if playersData then
-            -- ลบ \n และอักขระอื่นๆ ที่ไม่ใช่ตัวเลขออกจาก playersData
-            playersData = playersData:gsub("%D", "")  -- ลบอักขระที่ไม่ใช่ตัวเลข
+            playersData = playersData:gsub("%D", "")
             print("ตรวจสอบ players (หลังการจัดการ):", playersData)
 
-            -- แปลง playersData เป็นจำนวนผู้เล่นทั้งหมด
-            local playersCount = tonumber(playersData:sub(1, -3))  -- เอาเลข 2 ตัวแรกเป็นจำนวนผู้เล่น
-            local maxPlayers = tonumber(playersData:sub(-2))  -- เอาเลข 2 ตัวสุดท้ายเป็นจำนวนผู้เล่นสูงสุด
+            local playersCount = tonumber(playersData:sub(1, -3))
+            local maxPlayers = tonumber(playersData:sub(-2))
             print("จำนวนผู้เล่นในโหนดนี้:", playersCount, "/", maxPlayers)
 
             if playersCount and maxPlayers and playersCount < 12 then
@@ -70,37 +68,48 @@ local function selectRandomNode(nodes)
     end
 end
 
+-- ฟังก์ชันสำหรับเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก
+local function attemptTeleport(jobId, player)
+    local success = false
+    while not success do
+        local teleportSuccess, errorMsg = pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, player)
+        end)
+        if teleportSuccess then
+            print("เทเลพอร์ตสำเร็จไปยังเซิร์ฟเวอร์ที่มี job_id: " .. jobId)
+            success = true
+        else
+            print("การเทเลพอร์ตล้มเหลว, กำลังลองใหม่...")
+            wait(5) -- รอ 5 วินาทีแล้วลองใหม่
+        end
+    end
+end
+
 -- ฟังก์ชันหลักสำหรับตรวจสอบและเทเลพอร์ต
 local function checkForCursedCaptainAndTeleport()
     while true do
-        -- ตรวจสอบว่าผู้เล่นมีเครื่องมือ "Hellfire Torch" หรือไม่
         local player = Players.LocalPlayer
         local backpack = player:FindFirstChild("Backpack")
         if backpack and backpack:FindFirstChild("Hellfire Torch") then
             print("พบเครื่องมือ 'Hellfire Torch' ใน Backpack หยุดการทำงาน")
-            return -- หยุดฟังก์ชันนี้และไม่ทำการเทเลพอร์ต
+            return
         end
 
-        -- ตรวจสอบค่าว่า raceValue เป็น "Ghoul" หรือไม่
         local raceValue = player:FindFirstChild("Data") and player.Data:FindFirstChild("Race") and player.Data.Race.Value
         if raceValue == "Ghoul" then
             print("พบว่า Race เป็น 'Ghoul', หยุดการทำงาน")
-            return -- หยุดฟังก์ชันนี้และไม่ทำการเทเลพอร์ต
+            return
         end
 
-        -- ตรวจสอบว่ามี "Cursed Captain" อยู่ใน Workspace หรือไม่
         local cursedCaptain = Workspace:FindFirstChild("Enemies") and Workspace.Enemies:FindFirstChild("Cursed Captain")
         if not cursedCaptain then
             print("ไม่พบ 'Cursed Captain' ใน Workspace, กำลังเตรียมเทเลพอร์ต...")
             
             local ghoulData = getGhoulDataFromFirebase(serverUrl)
-
             if ghoulData then
                 local selectedNode = selectRandomNode(ghoulData)
-
                 if selectedNode and selectedNode.job_id then
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, selectedNode.job_id, player)
-                    print("กำลังเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
+                    attemptTeleport(selectedNode.job_id, player)
                     return -- ออกจากลูปหลังจากเทเลพอร์ตสำเร็จ
                 else
                     print("ไม่พบเซิร์ฟเวอร์ที่ตรงตามเงื่อนไข, รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง...")
@@ -111,7 +120,7 @@ local function checkForCursedCaptainAndTeleport()
         else
             print("พบ 'Cursed Captain' ใน Workspace, รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง...")
         end
-        wait(10) -- รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง
+        wait(10)
     end
 end
 
