@@ -3,6 +3,9 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
+-- รอ 30 วิก่อนที่สคริปต์จะเริ่มทำงาน
+wait(30)
+
 local serverUrl = "https://jobid-1e3dc-default-rtdb.asia-southeast1.firebasedatabase.app/banana_hub_notifications/latest_messages.json"
 local switchingServer = false  -- ตัวแปรสำหรับควบคุมสถานะการเปลี่ยนเซิร์ฟเวอร์
 
