@@ -3,10 +3,9 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- URL ของ Firebase ที่เก็บข้อมูลล่าสุดจาก _latest_messages
 local serverUrl = "https://jobid-1e3dc-default-rtdb.asia-southeast1.firebasedatabase.app/banana_hub_notifications/latest_messages.json"
+local switchingServer = false  -- ตัวแปรสำหรับควบคุมสถานะการเปลี่ยนเซิร์ฟเวอร์
 
--- ฟังก์ชันสำหรับการดึงข้อมูลจาก Firebase
 local function getDataFromFirebase(url)
     local response = game:HttpGet(url)
     if response then
@@ -23,7 +22,6 @@ local function getDataFromFirebase(url)
     end
 end
 
--- ฟังก์ชันสำหรับเลือกโหนดที่ดีที่สุด
 local function selectBestNode(nodes)
     local bestNode = nil
     local leastPlayers = math.huge
@@ -48,7 +46,6 @@ local function selectBestNode(nodes)
     return nil
 end
 
--- ฟังก์ชันสำหรับตรวจสอบสถานะพระจันทร์และเวลาสำหรับ Sea3
 local function CheckMoonAndTimeForSea3()
     local function MoonTextureId()
         return game:GetService("Lighting").Sky.MoonTextureId
@@ -99,9 +96,8 @@ local function CheckMoonAndTimeForSea3()
     return calculateMoonPhase()
 end
 
--- ฟังก์ชันหลักสำหรับตรวจสอบและเทเลพอร์ต
 local function checkForBestNodeAndTeleport()
-    while true do
+    while not switchingServer do
         local moonPhaseInfo = CheckMoonAndTimeForSea3()
         print("Moon Phase Info: " .. moonPhaseInfo)
 
@@ -118,8 +114,8 @@ local function checkForBestNodeAndTeleport()
                 local selectedNode = selectBestNode(latestMessages)
 
                 if selectedNode and selectedNode.jobid then
-                    local player = Players.LocalPlayer
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, selectedNode.jobid, player)
+                    switchingServer = true  -- กำลังเปลี่ยนเซิร์ฟเวอร์
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, selectedNode.jobid, Players.LocalPlayer)
                     break
                 else
                     print("ไม่พบเซิร์ฟเวอร์ที่ตรงตามเงื่อนไข, กำลังรอ 10 วินาทีก่อนตรวจสอบอีกครั้ง...")
@@ -135,13 +131,14 @@ local function checkForBestNodeAndTeleport()
     end
 end
 
--- ตรวจสอบการเพิ่มข้อความ "The Blue Moon fades away..."
 playerGui.DescendantAdded:Connect(function(descendant)
     if (descendant:IsA("TextLabel") or descendant:IsA("TextButton")) and descendant.Text == "The Blue Moon fades away..." then
         print("พบข้อความ 'The Blue Moon fades away...' ทำการเลือกเซิร์ฟเวอร์ใหม่ทันที")
-        checkForBestNodeAndTeleport()
+        if not switchingServer then
+            switchingServer = true  -- กำลังเปลี่ยนเซิร์ฟเวอร์
+            checkForBestNodeAndTeleport()
+        end
     end
 end)
 
--- เริ่มต้นตรวจสอบและเทเลพอร์ต
 checkForBestNodeAndTeleport()
