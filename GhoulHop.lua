@@ -133,7 +133,7 @@ local function checkForCursedCaptainAndTeleport()
 end
 
 -- รอ 15 วินาทีก่อนเริ่มสคริปต์
-wait(15)
+wait(20)
 
 -- เรียกฟังก์ชันหลัก
 checkForCursedCaptainAndTeleport()
