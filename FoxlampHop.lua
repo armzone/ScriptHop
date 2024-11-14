@@ -6,7 +6,7 @@ local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 -- รอ 30 วิก่อนที่สคริปต์จะเริ่มทำงาน
 wait(30)
 
-local serverUrl = "http://http://223.206.145.158/:5000/Fullmoon"  -- เปลี่ยน <YOUR_SERVER_IP> เป็น IP ของเซิร์ฟเวอร์ Flask
+local serverUrl = "http://http://223.206.145.158:5000/Fullmoon"  -- เปลี่ยน <YOUR_SERVER_IP> เป็น IP ของเซิร์ฟเวอร์ Flask
 local switchingServer = false  -- ตัวแปรสำหรับควบคุมสถานะการเปลี่ยนเซิร์ฟเวอร์
 
 -- ฟังก์ชันสำหรับตรวจสอบสถานะพระจันทร์และเวลาสำหรับ Sea3
