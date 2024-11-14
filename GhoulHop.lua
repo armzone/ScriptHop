@@ -78,20 +78,21 @@ local function attemptTeleport(player)
             if selectedNode and selectedNode.job_id then
                 print("กำลังพยายามเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
                 
+                -- ครอบการเทเลพอร์ตใน pcall เพื่อจัดการข้อผิดพลาดและวนลูปใหม่
                 local success, errorMsg = pcall(function()
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, selectedNode.job_id, player)
                 end)
                 
                 if success then
                     print("เทเลพอร์ตสำเร็จไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
-                    return
+                    return -- ออกจากฟังก์ชันเมื่อสำเร็จ
                 else
-                    print("เกิดข้อผิดพลาดขณะเทเลพอร์ต: " .. (errorMsg or "ไม่ทราบสาเหตุ"))
+                    print("การเทเลพอร์ตล้มเหลว: " .. (errorMsg or "ไม่ทราบสาเหตุ"))
                     if errorMsg and errorMsg:find("GameFull") then
                         print("เซิร์ฟเวอร์เต็ม, กำลังลองเซิร์ฟเวอร์ใหม่ทันที...")
                     else
-                        print("เกิดข้อผิดพลาดที่ไม่เกี่ยวข้องกับเซิร์ฟเวอร์เต็ม, รอ 5 วินาทีก่อนลองใหม่...")
-                        wait(5)  -- รอเล็กน้อยสำหรับข้อผิดพลาดที่ไม่ใช่ "GameFull"
+                        print("เกิดข้อผิดพลาดที่ไม่ใช่ 'GameFull' รอ 5 วินาทีก่อนลองใหม่...")
+                        wait(5)  -- รอ 5 วินาทีก่อนลองใหม่
                     end
                 end
             else
@@ -99,6 +100,7 @@ local function attemptTeleport(player)
                 wait(10)
             end
         end
+        wait(5)  -- เพิ่มการหน่วงเวลาสำหรับการวนลูป
     end
 end
 
