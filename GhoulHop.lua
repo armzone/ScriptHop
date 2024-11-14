@@ -67,9 +67,8 @@ local function selectRandomNode(nodes)
     end
 end
 
--- ฟังก์ชันสำหรับเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก และลองใหม่หากเซิร์ฟเวอร์เต็ม
 local function attemptTeleport(player)
-    repeat
+    while true do
         local ghoulData = getGhoulDataFromAPI(serverUrl)
         if not ghoulData then
             print("ไม่สามารถดึงข้อมูลเซิร์ฟเวอร์ได้ รอ 10 วินาทีก่อนลองใหม่...")
@@ -79,19 +78,20 @@ local function attemptTeleport(player)
             if selectedNode and selectedNode.job_id then
                 print("กำลังพยายามเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
                 
-                local teleportSuccess, errorMsg = pcall(function()
+                local success, errorMsg = pcall(function()
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, selectedNode.job_id, player)
                 end)
                 
-                if teleportSuccess then
+                if success then
                     print("เทเลพอร์ตสำเร็จไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
                     return
                 else
-                    print("การเทเลพอร์ตล้มเหลว: " .. errorMsg)
-                    if errorMsg:find("GameFull") then
-                        print("เซิร์ฟเวอร์เต็ม, กำลังลองเซิร์ฟเวอร์ใหม่ใน 5 วินาที...")
+                    print("เกิดข้อผิดพลาดขณะเทเลพอร์ต: " .. (errorMsg or "ไม่ทราบสาเหตุ"))
+                    if errorMsg and errorMsg:find("GameFull") then
+                        print("เซิร์ฟเวอร์เต็ม, กำลังลองเซิร์ฟเวอร์ใหม่ทันที...")
                     else
-                        warn("เกิดข้อผิดพลาดขณะเทเลพอร์ต: " .. errorMsg)
+                        print("เกิดข้อผิดพลาดที่ไม่เกี่ยวข้องกับเซิร์ฟเวอร์เต็ม, รอ 5 วินาทีก่อนลองใหม่...")
+                        wait(5)  -- รอเล็กน้อยสำหรับข้อผิดพลาดที่ไม่ใช่ "GameFull"
                     end
                 end
             else
@@ -99,8 +99,7 @@ local function attemptTeleport(player)
                 wait(10)
             end
         end
-        wait(5)
-    until false
+    end
 end
 
 -- ฟังก์ชันหลักสำหรับตรวจสอบและเทเลพอร์ต
