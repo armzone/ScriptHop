@@ -69,7 +69,7 @@ end
 
 -- ฟังก์ชันสำหรับเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก และลองใหม่หากเซิร์ฟเวอร์เต็ม
 local function attemptTeleport(player)
-    while true do
+    repeat
         local ghoulData = getGhoulDataFromAPI(serverUrl)
         if not ghoulData then
             print("ไม่สามารถดึงข้อมูลเซิร์ฟเวอร์ได้ รอ 10 วินาทีก่อนลองใหม่...")
@@ -100,12 +100,12 @@ local function attemptTeleport(player)
             end
         end
         wait(5)
-    end
+    until false
 end
 
 -- ฟังก์ชันหลักสำหรับตรวจสอบและเทเลพอร์ต
 local function checkForCursedCaptainAndTeleport()
-    while true do
+    repeat
         local player = Players.LocalPlayer
         local backpack = player:FindFirstChild("Backpack")
         if backpack and backpack:FindFirstChild("Hellfire Torch") then
@@ -128,7 +128,7 @@ local function checkForCursedCaptainAndTeleport()
             print("พบ 'Cursed Captain' ใน Workspace, รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง...")
         end
         wait(10)
-    end
+    until false
 end
 
 wait(15)
