@@ -6,7 +6,7 @@ local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 -- รอ 30 วิก่อนที่สคริปต์จะเริ่มทำงาน
 wait(30)
 
-local serverUrl = "https://jobid-1e3dc-default-rtdb.asia-southeast1.firebasedatabase.app/banana_hub_notifications/latest_messages.json"
+local serverUrl = "http://http://223.206.145.158/:5000/Fullmoon"  -- เปลี่ยน <YOUR_SERVER_IP> เป็น IP ของเซิร์ฟเวอร์ Flask
 local switchingServer = false  -- ตัวแปรสำหรับควบคุมสถานะการเปลี่ยนเซิร์ฟเวอร์
 
 -- ฟังก์ชันสำหรับตรวจสอบสถานะพระจันทร์และเวลาสำหรับ Sea3
@@ -60,14 +60,14 @@ local function CheckMoonAndTimeForSea3()
     return calculateMoonPhase()
 end
 
--- ฟังก์ชันสำหรับดึงข้อมูลจาก Firebase
-local function getDataFromFirebase(url)
+-- ฟังก์ชันสำหรับดึงข้อมูลจาก API ของ Flask
+local function getDataFromAPI(url)
     local success, response = pcall(function() return game:HttpGet(url) end)
     if success and response then
         local data = HttpService:JSONDecode(response)
         return data
     else
-        warn("ไม่สามารถดึงข้อมูลจาก Firebase ได้:", response)
+        warn("ไม่สามารถดึงข้อมูลจาก API ได้:", response)
         return nil
     end
 end
@@ -133,7 +133,7 @@ local function checkForBestNodeAndTeleport(forceSwitch)
         return
     end
 
-    local latestMessages = getDataFromFirebase(serverUrl)
+    local latestMessages = getDataFromAPI(serverUrl)
     if latestMessages then
         local selectedNode = selectBestNode(latestMessages)
         if selectedNode and selectedNode.jobid then
@@ -153,7 +153,7 @@ local function checkForBestNodeAndTeleport(forceSwitch)
             wait(10)
         end
     else
-        warn("ไม่พบข้อมูลจาก Firebase หรือไม่สามารถดึงข้อมูลได้")
+        warn("ไม่พบข้อมูลจาก API หรือไม่สามารถดึงข้อมูลได้")
         switchingServer = false
         wait(10)
     end
