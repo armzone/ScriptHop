@@ -3,24 +3,24 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
 
--- URL ของ Firebase ที่เก็บข้อมูล AllBoss/Ghoul
-local serverUrl = "https://jobid-1e3dc-default-rtdb.asia-southeast1.firebasedatabase.app/AllBoss/Ghoul.json"
+-- URL ของ API ที่เก็บข้อมูล AllBoss/Ghoul
+local serverUrl = "http://223.206.145.158:5000/AllBoss/Ghoul" -- แทนที่ <Your_Public_IP> ด้วย IP ของคุณ
 
--- ฟังก์ชันสำหรับการดึงข้อมูลจาก Firebase
-local function getGhoulDataFromFirebase(url)
-    print("กำลังดึงข้อมูลจาก Firebase...")
+-- ฟังก์ชันสำหรับการดึงข้อมูลจาก API
+local function getGhoulDataFromAPI(url)
+    print("กำลังดึงข้อมูลจาก API...")
     local success, response = pcall(function() return game:HttpGet(url) end)
     if success and response then
         local data = HttpService:JSONDecode(response)
         if data then
-            print("ข้อมูลทั้งหมดที่ได้รับจาก Firebase:", HttpService:JSONEncode(data))
+            print("ข้อมูลทั้งหมดที่ได้รับจาก API:", HttpService:JSONEncode(data))
             return data
         else
             warn("ไม่พบข้อมูลในโหนด AllBoss/Ghoul")
             return nil
         end
     else
-        warn("ไม่สามารถดึงข้อมูลจาก Firebase ได้")
+        warn("ไม่สามารถดึงข้อมูลจาก API ได้")
         return nil
     end
 end
@@ -33,7 +33,6 @@ local function selectRandomNode(nodes)
     for key, node in pairs(nodes) do
         print("ตรวจสอบโหนด:", key, node)
         
-        -- เข้าถึงข้อมูลโหนดย่อยที่มี job_id และ players
         local jobId = node.job_id
         local playersData = node.players
         print("ตรวจสอบ job_id:", jobId)
@@ -71,7 +70,7 @@ end
 -- ฟังก์ชันสำหรับเทเลพอร์ตไปยังเซิร์ฟเวอร์ที่เลือก และลองใหม่หากเซิร์ฟเวอร์เต็ม
 local function attemptTeleport(player)
     while true do
-        local ghoulData = getGhoulDataFromFirebase(serverUrl)
+        local ghoulData = getGhoulDataFromAPI(serverUrl)
         if not ghoulData then
             print("ไม่สามารถดึงข้อมูลเซิร์ฟเวอร์ได้ รอ 10 วินาทีก่อนลองใหม่...")
             wait(10)
@@ -86,7 +85,7 @@ local function attemptTeleport(player)
                 
                 if teleportSuccess then
                     print("เทเลพอร์ตสำเร็จไปยังเซิร์ฟเวอร์ที่มี job_id: " .. selectedNode.job_id)
-                    return -- ออกจากฟังก์ชันหากเทเลพอร์ตสำเร็จ
+                    return
                 else
                     print("การเทเลพอร์ตล้มเหลว: " .. errorMsg)
                     if errorMsg:find("GameFull") then
@@ -100,7 +99,7 @@ local function attemptTeleport(player)
                 wait(10)
             end
         end
-        wait(5) -- รอ 5 วินาทีก่อนลองใหม่ในกรณีที่เซิร์ฟเวอร์เต็ม
+        wait(5)
     end
 end
 
@@ -124,7 +123,7 @@ local function checkForCursedCaptainAndTeleport()
         if not cursedCaptain then
             print("ไม่พบ 'Cursed Captain' ใน Workspace, กำลังเตรียมเทเลพอร์ต...")
             attemptTeleport(player)
-            return -- ออกจากลูปหลังจากเทเลพอร์ตสำเร็จ
+            return
         else
             print("พบ 'Cursed Captain' ใน Workspace, รอ 10 วินาทีก่อนตรวจสอบอีกครั้ง...")
         end
@@ -132,8 +131,6 @@ local function checkForCursedCaptainAndTeleport()
     end
 end
 
--- รอ 15 วินาทีก่อนเริ่มสคริปต์
-wait(20)
+wait(15)
 
--- เรียกฟังก์ชันหลัก
 checkForCursedCaptainAndTeleport()
