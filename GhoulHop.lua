@@ -4,7 +4,7 @@ local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
 
 -- URL ของ API ที่เก็บข้อมูล AllBoss/Ghoul
-local serverUrl = "http://223.206.145.158:5000/AllBoss/Ghoul" -- แทนที่ <Your_Public_IP> ด้วย IP ของคุณ
+local serverUrl = "http://223.205.84.47:5000/AllBoss/Ghoul" -- แทนที่ <Your_Public_IP> ด้วย IP ของคุณ
 
 -- ฟังก์ชันสำหรับการดึงข้อมูลจาก API
 local function getGhoulDataFromAPI(url)
